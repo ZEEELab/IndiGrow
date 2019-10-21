@@ -22,11 +22,11 @@ class nklandscape:
         return total
 
 
-a = nklandscape(20, 10)
-b = nklandscape(4, 0)
-c = nklandscape(10, 5)
+# a = nklandscape(20, 10)
+# b = nklandscape(4, 0)
+# c = nklandscape(10, 5)
 
-for _ in range(10000):
-    rand = randint(0, 2**(10))
-    a.fitness(rand)
+# for _ in range(10000):
+#     rand = randint(0, 2**(10))
+#     a.fitness(rand)
 
