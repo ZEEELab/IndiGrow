@@ -3,20 +3,21 @@ from nklandscape import binary
 from random import randint
 
 class nkclass:
-    landscape = nklandscape(5, 3)
+    landscape = nklandscape(5, 1)
 
     def __init__(self):
-        self.bitstring = randint(0, 31)
+        self.bitstring = randint(0, (2**self.landscape.n) - 1)
 
-    def fitness(self):
+    def __fitness__(self):
         return self.landscape.fitness(self.bitstring)
 
-    def mutate(self):
+    def __mutate__(self):
         bstr = binary(self.bitstring, self.landscape.n)[2:]
-        bstr = list(bstr)
-        flip_index = randint(0, self.landscape.n - 1)
-        bstr[flip_index] = '0' if bstr[flip_index] == '1' else '1'
-        bstr = ''.join(bstr)
+        for _ in range(randint(1, self.landscape.n)):
+            bstr = list(bstr)
+            flip_index = randint(0, self.landscape.n - 1)
+            bstr[flip_index] = '0' if bstr[flip_index] == '1' else '1'
+            bstr = ''.join(bstr)
         self.bitstring = int(bstr, 2)
 
 
