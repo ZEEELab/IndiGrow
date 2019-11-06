@@ -25,6 +25,10 @@ def __hash__(self):
     return hash(tup)
 
 
+def __mutate__(self):
+    return random.choice(self.__mutational_neighborhood__())
+
+
 def neighborhood_distribution(num_mutant, size):
     distribution = []
     for _ in range(size - 1):
@@ -52,6 +56,11 @@ def create_population(population_size, counter, user_class, pop_map):
     instance = user_class()
     instance.__class__.__eq__ = __eq__
     instance.__class__.__hash__ = __hash__
+    if '__mutate__' not in dir(instance) and '__mutational_neighborhood__' not in dir(instance):
+        raise RuntimeError('No valid __mutate__ or __mutational_neighborhood__ functions given')
+    if '__mutate__' not in dir(instance):
+        instance.__class__.__mutate__ = __mutate__
+
 
     current_counter = next(counter)
     pop.add_vertex(name=current_counter,
@@ -133,11 +142,13 @@ def mutate(population, population_size, mutation_rate, counter, pop_map):
             else:
                 for _ in range(num_mutant):
                     mutant_genotype = deepcopy(population.vs[name]['genotype'])
+                    # do k mutations on the genotype to get the new mutant
                     for _ in range(k):
                         mutant_genotype.__mutate__()
-
+                    # if this is not a new genotype, update the frequency
                     if mutant_genotype in pop_map:
                         pop_map[mutant_genotype]['frequency'] += 1 / population_size
+                    # if it is new, add it to the 
                     else:
                         current_counter = next(counter)
                         population.add_vertex(name=current_counter,
@@ -151,24 +162,5 @@ def mutate(population, population_size, mutation_rate, counter, pop_map):
         k += 1
         num_mutants = new_num_mutants
 
-    # mutants = []
-    # for i, num_mutant in enumerate(num_mutants):
-    #     for _ in range(num_mutant):
-    #         mutants.append((deepcopy(population.vs['genotype'][i]), population.vs['name'][i]))
-    
-    # for mutant in mutants:
-    #     mutant_genotype = mutant[0]
-    #     parent = mutant[1]
-    #     mutant_genotype.__mutate__()
-    #     if mutant_genotype in pop_map:
-    #         pop_map[mutant_genotype]['frequency'] += 1/ population_size
-    #     else:
-    #         current_counter = next(counter)
-    #         population.add_vertex(name=current_counter,
-    #                                 parent=mutant[1],
-    #                                   frequency=1 / population_size,
-    #                                   max_frequency=1 / population_size,
-    #                                   genotype=mutant_genotype)
-    #         pop_map[mutant_genotype] = population.vs.find(name=current_counter)
     return population
 
