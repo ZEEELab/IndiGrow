@@ -52,7 +52,8 @@ def create_population(population_size, counter, user_class, pop_map):
                                      'max_frequency': 0,
                                      'genotype': None,
                                      'fitness': 0,
-                                     'num_mutations': 0})
+                                     'num_mutations': 0,
+                                     'dirty_flag': 0})
     instance = user_class()
     instance.__class__.__eq__ = __eq__
     instance.__class__.__hash__ = __hash__
@@ -61,22 +62,34 @@ def create_population(population_size, counter, user_class, pop_map):
     if '__mutate__' not in dir(instance):
         instance.__class__.__mutate__ = __mutate__
 
-
     current_counter = next(counter)
     pop.add_vertex(name=current_counter,
                    parent=-1,
                    frequency=1.0,
                    max_frequency=1.0,
                    genotype=instance,
-                   num_mutations=0)
+                   num_mutations=0,
+                   dirty_flag=1)
     pop_map[instance] = pop.vs.find(name=current_counter)
 
     return pop
 
 
-def get_fitnesses(population):
+def get_fitnesses(population, fitness_map):
     """Use fitness function of each genotype to set fitness in each vertex"""
-    population.vs['fitness'] = [genotype.__fitness__() for genotype in population.vs['genotype']]
+    dirty_subset = population.vs.select(dirty_flag=1)
+    for vertex in dirty_subset:
+        vertex['fitness'] = vertex['genotype'].__fitness__()
+        vertex['dirty_flag'] = 0
+    # print(population.vs['fitness'])
+    #population.vs['fitness'] = [genotype.__fitness__() for genotype in population.vs['genotype']]
+    # alive_genotype_indexes = nnonzero(population.vs['frequency'])
+    # for index in alive_genotype_indexes[0]:
+    #     genotype = population.vs[index]['genotype']
+    #     if genotype not in fitness_map:
+    #         fitness_map[genotype] = genotype.__fitness__()
+    #     population.vs[index]['fitness'] = fitness_map[genotype]
+
     return population
 
 
@@ -99,8 +112,8 @@ def mutate(population, population_size, mutation_rate, counter, pop_map):
     """Perform mutations on each genotype"""
     assert mutation_rate >= 0 and mutation_rate <= 1
     abundances = [freq * population_size for freq in population.vs['frequency']]
-    num_mutants = np.random.binomial(n= abundances,
-                                     p=1 - np.exp(-mutation_rate))
+    num_mutants = nbinom(n= abundances,
+                         p=1 - np.exp(-mutation_rate))
 
     population.vs['frequency'] = population.vs['frequency'] - (num_mutants / population_size)
 
@@ -136,7 +149,8 @@ def mutate(population, population_size, mutation_rate, counter, pop_map):
                                               frequency=mutant_count/population_size,
                                               max_frequency=mutant_count/population_size,
                                               genotype=mutant_genotype,
-                                              num_mutations=k)
+                                              num_mutations=k,
+                                              dirty_flag=1)
                         pop_map[mutant_genotype] = population.vs.find(name=current_counter)
             # if no mutational neighborhood function or k > 1, just call num_mutant mutations
             else:
@@ -156,7 +170,8 @@ def mutate(population, population_size, mutation_rate, counter, pop_map):
                                                 frequency=1/population_size,
                                                 max_frequency=1/population_size,
                                                 genotype=mutant_genotype,
-                                                num_mutations=k)
+                                                num_mutations=k,
+                                                dirty_flag=1)
                         pop_map[mutant_genotype] = population.vs.find(name=current_counter)
 
         k += 1
