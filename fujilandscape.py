@@ -40,9 +40,9 @@ def get_rough_mt_fuji(optimal_genotype, num_bits, cost_of_mismatch, noise_dist, 
 
 class fuji:
     def __init__(self):
-        graph, fitnesses = get_rough_mt_fuji(1011, 12, .01, numpy.random.exponential, scale=0.0001, size=None)
+        graph, fitnesses = get_rough_mt_fuji(1011, 10, .01, numpy.random.exponential, scale=0.0001, size=None)
         print(max(fitnesses))
-        self.n = 12
+        self.n = 10
         self.fitnesses = fitnesses
 
     def fitness(self, genotype):
