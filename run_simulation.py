@@ -12,12 +12,10 @@ numpy.random.seed(12137)
 population_size = 10E7
 mutation_rate = 10E-4
 
+environment = infectionenvironment()
 
-test = IndiGrow(population_size, genotype_counter)
-test.create_population(nkclass)
-for i in range(50000):
-    test.get_fitnesses()
-    if i % 1000 == 0:
-      print(max(test.population.vs['fitness']))
-    test.reproduce()
-    test.mutate(mutation_rate)
+test = IndiGrow(population_size, mutation_rate, environment=environment)
+test.create_population(infectionclass)
+for i in range(500):
+    test.timestep(i)
+   
