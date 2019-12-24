@@ -5,13 +5,12 @@ import itertools
 import random
 import numpy
 
-random.seed(101)
-numpy.random.seed(110)
+random.seed(13221)
+numpy.random.seed(12137)
 
-genotype_counter = itertools.count(0)
-population_size = 10E5
-mutation_rate = 10E-6
-maxf = 0
+# genotype_counter = itertools.count(0)
+population_size = 10E7
+mutation_rate = 10E-4
 
 
 test = IndiGrow(population_size, genotype_counter)
