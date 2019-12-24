@@ -1,5 +1,6 @@
-from myclass import nkclass
-from population import IndiGrow
+from user_classes.infectionclass import infectionclass
+from user_environments.infectionenvironment import infectionenvironment
+from IndiGrow import IndiGrow
 import itertools
 import random
 import numpy
