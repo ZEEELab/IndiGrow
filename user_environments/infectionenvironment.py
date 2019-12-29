@@ -7,11 +7,11 @@ class infectionenvironment:
     def __update__(self):
         groups = self.__IndiGrow__.group_by_attributes(['bitstring'])
         for group in groups:
-            for state in group:
-                if state['genotype'].state == 'notinfected':
-                    self.__IndiGrow__.transfer_state(state['genotype'], {'state' : 'infected'}, random.random())
-                elif state['genotype'].state == 'infected':
-                    self.__IndiGrow__.transfer_state(state['genotype'], {'state' : 'immune'}, random.random())
+            for member in group:
+                if member['genotype'].state == 'notinfected':
+                    self.__IndiGrow__.transfer_state(member['genotype'], {'state' : 'infected'}, random.random())
+                elif member['genotype'].state == 'infected':
+                    self.__IndiGrow__.transfer_state(member['genotype'], {'state' : 'immune'}, random.random())
        
 
 
