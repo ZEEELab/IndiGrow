@@ -13,8 +13,8 @@ from backports.functools_lru_cache import lru_cache
 
 
 def __eq__(self, other):
-    """ 
-    Unordered maps & sets require an equality operator on top of a hash, so this 
+    """
+    Unordered maps & sets require an equality operator on top of a hash, so this
     allows us to compare the equality of genotype classes.
     """
     memberVariables = dir(self)
@@ -24,8 +24,9 @@ def __eq__(self, other):
             return False
     return True
 
+
 def __hash__(self):
-    """ 
+    """
     This is a hashing function designed to hash a whole class, lets us hash a genotype class.
     """
     memberVariables = dir(self)
@@ -35,7 +36,7 @@ def __hash__(self):
 
 
 def __mutate__(self):
-    """ 
+    """
     If for some reason we are given a neighborhood function but not a mutate function,
     we can just randomly select a genotype from the neighborhood.
     """
@@ -43,7 +44,7 @@ def __mutate__(self):
 
 
 class IndiGrow:
-    """ 
+    """
     This is a class for easily creating and running individual-based lineage simulations.
     """
     def __init__(self, population_size, mutation_rate, genotype=None, environment=None):
@@ -56,25 +57,26 @@ class IndiGrow:
         if self.environment:
             self.environment.__IndiGrow__ = self
         self.population = igraph.Graph(directed=True,
-                        graph_attrs={ 'population_size': population_size,
-                                      'generations': 0},
-                        vertex_attrs={  'name': None,
-                                        'parent': None,
-                                        'first_seen': None,
-                                        'last_seen': None,
-                                        'frequency': 0,
-                                        'max_frequency': 0,
-                                        'genotype': None,
-                                        'fitness': 0,
-                                        'num_mutations': 0,
-                                        'dirty_flag': 0})
+                        graph_attrs={'population_size': population_size,
+                                     'generations': 0},
+                        vertex_attrs={'name': None,
+                                      'parent': None,
+                                      'first_seen': None,
+                                      'last_seen': None,
+                                      'frequency': 0,
+                                      'max_frequency': 0,
+                                      'genotype': None,
+                                      'fitness': 0,
+                                      'num_mutations': 0,
+                                      'dirty_flag': 0})
         self.population_size = population_size
         self.counter = itertools.count(0)
+        self.step = 0
         self.mutation_rate = mutation_rate
         self.create_population()
 
     def neighborhood_distribution(self, num_mutant, size):
-        """ 
+        """
         Randomly distributes num_mutants (an integer) across an array of size "size."
         Example: Distributing 5 mutations across 3 genotypes (size=3) we may see [2,1,2].
         """
@@ -109,7 +111,6 @@ class IndiGrow:
                     dirty_flag=1)
         self.pop_map[instance] = self.population.vs.find(name=current_counter)
 
-
     def get_fitnesses(self):
         """
         Use fitness function of each genotype to set fitness in each vertex
@@ -119,7 +120,6 @@ class IndiGrow:
         for vertex in dirty_subset:
             vertex['fitness'] = vertex['genotype'].__fitness__()
             vertex['dirty_flag'] = 0
-
 
     def reproduce(self):
         """
@@ -136,15 +136,14 @@ class IndiGrow:
         # renormalize all frequencies
         self.population.vs['frequency'] = np.array(self.population.vs['frequency']) / sum(self.population.vs['frequency'])
 
-
     def mutate(self, mutation_rate):
         """
         Perform mutations on each genotype.
         """
         assert mutation_rate >= 0 and mutation_rate <= 1
         abundances = [freq * self.population_size for freq in self.population.vs['frequency']]
-        num_mutants = nbinom(n= abundances,
-                            p=1 - np.exp(-mutation_rate))
+        num_mutants = nbinom(n=abundances,
+                             p=1-np.exp(-mutation_rate))
 
         self.population.vs['frequency'] = self.population.vs['frequency'] - (num_mutants / self.population_size)
 
@@ -193,7 +192,7 @@ class IndiGrow:
                         # if this is not a new genotype, update the frequency
                         if mutant_genotype in self.pop_map:
                             self.pop_map[mutant_genotype]['frequency'] += 1 / self.population_size
-                        # if it is new, add it to the 
+                        # if it is new, add it to the map and the population
                         else:
                             current_counter = next(self.counter)
                             self.population.add_vertex(name=current_counter,
@@ -207,7 +206,6 @@ class IndiGrow:
 
             k += 1
             num_mutants = new_num_mutants
-
 
     def group_by_attributes(self, attributes):
         """
@@ -239,7 +237,7 @@ class IndiGrow:
             # if the genotype didn't fit into any subgroups, create a new subgroup
             if not include:
                 groups.append([node])
-        
+
         return groups
 
     def find_all_attributes(self, attributes):
@@ -272,12 +270,12 @@ class IndiGrow:
         """
         Change the frequency of the node associated with genotype and the node associated with
         all the state changes specified as a dictionary based on the proportion given as an arg.
-        Example: genotype has member variable "state" which is an int, let's say it's currently 0. 
+        Example: genotype has member variable "state" which is an int, let's say it's currently 0.
         state_changes = {'state' : 1}
         proportion_change = .5
-        This will 'transfer' .5 of the frequency of the genotype with a state of 0 to the 
+        This will 'transfer' .5 of the frequency of the genotype with a state of 0 to the
         same genotype but with a state of 1. If the frequency of the original genotype is .3 and the
-        frequency of the recipient is .1 then after the transfer the original (state=0) will have 
+        frequency of the recipient is .1 then after the transfer the original (state=0) will have
         a frequency of .15 and the new organism (state=1) will have a frequency of .25
         """
         genotype_copy = deepcopy(genotype)
@@ -299,15 +297,14 @@ class IndiGrow:
                                        num_mutations=0,
                                        dirty_flag=1)
             self.pop_map[genotype_copy] = self.population.vs.find(name=current_counter)
-        
+
         # find the change to the frequency, will depend on current frequency and change in proportion
         frequency_change = self.pop_map[genotype]['frequency'] * proportion_change
         # update the original and transfer genotypes' frequencies
         self.pop_map[genotype]['frequency'] -= frequency_change
         self.pop_map[genotype_copy]['frequency'] += frequency_change
 
-
-    def timestep(self, step):
+    def timestep(self):
         """
         Do all the operations associated with a timestep. If the user gave an enviornment we need
         to call their update function, then update all of the fitnesses, then reproduce, then
@@ -318,3 +315,4 @@ class IndiGrow:
         self.get_fitnesses()
         self.reproduce()
         self.mutate(self.mutation_rate)
+        self.step += 1
