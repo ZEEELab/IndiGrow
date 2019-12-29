@@ -241,8 +241,33 @@ class IndiGrow:
                 groups.append([node])
         
         return groups
-            
-                
+
+    def find_all_attributes(self, attributes):
+        """
+        Make a list of all nodes in our population who's attributes match the given list of
+        attributes. Attributes should be given as an unordered map with the key being the member
+        variable and the values matching.
+        Example:
+        attributes = {
+                        'bitstring' : 5,
+                        'landscape_type' : 'nk',
+                        ...
+                     }
+        """
+        nodes = []
+        # go through all nodes and find the ones whose attributes match the given ones
+        for node in self.population.vs():
+            # assume the node has all the proper matching attributes
+            nodes.append(node)
+            node_attr = node['genotype'].__dict__
+            for attr in attributes:
+                if attributes[attr] != node_attr[attr]:
+                    # if we find that we don't have a match, remove the node from the list
+                    # and break out - insert and delete are both O(1) operations so this is cheap
+                    nodes.pop()
+                    break
+        return nodes
+
     def transfer_state(self, genotype, state_changes, proportion_change):
         """
         Change the frequency of the node associated with genotype and the node associated with
