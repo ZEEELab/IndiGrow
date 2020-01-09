@@ -7,7 +7,7 @@ import numpy
 
 
 class nk_fuji_class:
-    nklandscape = nklandscape(10, 5, numpy.random.RandomState(3))
+    nklandscape = nklandscape(10, 5)
     fujilandscape = fuji()
 
     def __init__(self):
