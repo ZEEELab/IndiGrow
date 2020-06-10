@@ -1,18 +1,16 @@
-import random
+from nk_fuji_class import nk_fuji_class
 
-class infectionenvironment:
+class nk_fuji_environment:
     def __init__(self):
         self.__IndiGrow__ = None
     
     def __update__(self):
-        groups = self.__IndiGrow__.group_by_attributes(['bitstring'])
-        for group in groups:
-            for state in group:
-                if state['genotype'].state == 'notinfected':
-                    self.__IndiGrow__.transfer_state(state['genotype'], {'state' : 'infected'}, random.random())
-                elif state['genotype'].state == 'infected':
-                    self.__IndiGrow__.transfer_state(state['genotype'], {'state' : 'immune'}, random.random())
-       
+        current_state = 'nk' if self.__IndiGrow__.step % 2 == 0 else 'fuji'
+        if current_state == 'fuji':
+             self.__IndiGrow__.fitness_function = nk_fuji_class.nklandscape.fitness 
+        else:
+             self.__IndiGrow__.fitness_function = nk_fuji_class.fujilandscape.fitness
+        self.__IndiGrow__.mark_as_dirty(all_dirty=True)
 
 
 

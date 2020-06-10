@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+build/*
+sample.egg-info
+dist
+.vscode/
