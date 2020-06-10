@@ -1,4 +1,4 @@
-import random
+from nk_fuji_class import nk_fuji_class
 
 class nk_fuji_environment:
     def __init__(self):
@@ -6,11 +6,11 @@ class nk_fuji_environment:
     
     def __update__(self):
         current_state = 'nk' if self.__IndiGrow__.step % 2 == 0 else 'fuji'
-        next_state = 'nk' if current_state == 'fuji' else 'fuji'
-        nodes = self.__IndiGrow__.find_all_attributes({'landscape_state' : current_state})
-        for node in nodes:
-            self.__IndiGrow__.transfer_state(node['genotype'], {'landscape_state' : next_state}, 1)
-       
+        if current_state == 'fuji':
+             self.__IndiGrow__.fitness_function = nk_fuji_class.nklandscape.fitness 
+        else:
+             self.__IndiGrow__.fitness_function = nk_fuji_class.fujilandscape.fitness
+        self.__IndiGrow__.mark_as_dirty(all_dirty=True)
 
 
 
