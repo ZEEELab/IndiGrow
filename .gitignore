@@ -4,3 +4,4 @@ build/*
 sample.egg-info
 dist
 .vscode/
+*/ipynb_checkpoints

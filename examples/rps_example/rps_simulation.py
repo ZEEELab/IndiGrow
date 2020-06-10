@@ -1,5 +1,5 @@
-from rps_example.rps_class import rps_class
-from rps_example.rps_print_event import rps_print_event
+from rps_class import rps_class
+from rps_print_event import rps_print_event
 from IndiGrow.IndiGrow import IndiGrow
 import random
 import numpy
