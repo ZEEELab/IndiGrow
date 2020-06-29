@@ -1,7 +1,6 @@
 from random import randint
 import random
 from copy import deepcopy
-from backports.functools_lru_cache import lru_cache
 import numpy
 
 
@@ -20,7 +19,6 @@ class infectionclass:
     def __mutate__(self):
         self.bitstring += 1 if random.random() > .5 else -1
     
-    @lru_cache(maxsize=64)
     def __mutational_neighborhood__(self):
         neighborhood = [deepcopy(self), deepcopy(self)]
         neighborhood[0].bitstring += 1

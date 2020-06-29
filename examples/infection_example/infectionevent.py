@@ -9,7 +9,6 @@ class infection_event_update:
         groups = self.__IndiGrow__.group_by_attributes(['bitstring'])
         for group in groups:
             for member in group:
-                a = 1
                 if member['genotype'].state == 'notinfected':
                     self.__IndiGrow__.transfer_state(member['genotype'], {'state' : 'infected'}, random.random())
                 elif member['genotype'].state == 'infected':

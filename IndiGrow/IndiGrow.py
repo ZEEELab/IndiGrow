@@ -1,8 +1,8 @@
-import igraph
 import numpy as np
 import random
 import itertools
 import inspect
+from igraph import Graph
 from numpy.random import binomial as nbinom
 from copy import deepcopy
 from scipy.special import gammainc as gamma
@@ -17,20 +17,20 @@ def __IndiGrow_eq__(self, other):
     Unordered maps & sets require an equality operator on top of a hash, so this
     allows us to compare the equality of genotype classes.
     """
-    memberVariables = self.__dict__
-    memberVariables = list(filter(lambda x: not (x[0] == '_' and x[-1] == '_'), memberVariables))
-    otherVariables = other.__dict__
-    otherVariables = list(filter(lambda x: not (x[0] == '_' and x[-1] == '_'), otherVariables))
-    return memberVariables == otherVariables
+    memberVars = self.__dict__
+    memberVars = {key: memberVars[key] for key in memberVars if not str(key[0]) == '_' and str(key[-1] == '_')}
+    otherVars = self.__dict__
+    otherVars = {key: otherVars[key] for key in otherVars if not str(key[0]) == '_' and str(key[-1] == '_')}
+    return memberVars == otherVars
 
 
 def __IndiGrow_hash__(self):
     """
     This is a hashing function designed to hash a whole class, lets us hash a genotype class.
     """
-    memberVariables = self.__dict__
-    memberVariables = list(filter(lambda x: not (x[0] == '_' and x[-1] == '_'), memberVariables))
-    tup = tuple((key, getattr(self, key)) for key in memberVariables)
+    memberVars = self.__dict__
+    memberVars = {key: memberVars[key] for key in memberVars if not str(key[0]) == '_' and str(key[-1] == '_')}
+    tup = tuple((key, memberVars[key]) for key in memberVars)
     return hash(tup)
 
 
@@ -57,7 +57,7 @@ class IndiGrow:
     def __init__(self, population_size=10E5, mutation_rate=0, environment=None,
                  fitness_function=None, environment_ff=False):
         """
-        Constructor for 
+        Constructor for IndiGrow simulation object
         """
         self.graph_node_to_genotype = dict()
         self.fitness_map = dict()
@@ -68,9 +68,9 @@ class IndiGrow:
         # give environment a way to interact with the simulation
         if self.environment:
             self.environment.__IndiGrow__ = self
-        
+
         # create the population represented as a graph
-        self.population = igraph.Graph(directed=True,
+        self.population = Graph(directed=True,
                         graph_attrs={'population_size': population_size,
                                      'generations': 0},
                         vertex_attrs={'name': None,
@@ -83,7 +83,7 @@ class IndiGrow:
                                       'fitness': 0,
                                       'num_mutations': 0,
                                       'dirty_flag': 0})
-        
+  
         self.population_size = population_size
         self.counter = itertools.count(0)
         self.step = 0
@@ -124,7 +124,7 @@ class IndiGrow:
         if '__mutate__' not in dir(genotype):
             genotype.__class__.__mutate__ = __IndiGrow_mutate__
 
-        current_counter = next(self.counter)
+        current_counter = str(next(self.counter))
         self.population.add_vertex(name=current_counter,
                     parent=-1,
                     frequency=frequency,
@@ -145,7 +145,7 @@ class IndiGrow:
             raise RuntimeError('Please include either an event class xor an event function')
         if event_class and '__run_handler__' not in dir(event_class):
             raise RuntimeError('__run_handler__ method not included in event class')
-        
+
         # if the user supplies an event function add it to a class instance,
         # using classes makes implementation much easier on our end
         default_subclass = __IndiGrow_default_event_subclass__()
@@ -223,7 +223,7 @@ class IndiGrow:
                         if mutant_genotype in self.graph_node_to_genotype:
                             self.graph_node_to_genotype[mutant_genotype]['frequency'] += mutant_count / self.population_size
                         else:
-                            current_counter = next(self.counter)
+                            current_counter = str(next(self.counter))
                             self.population.add_vertex(name=current_counter,
                                                 parent=self.population.vs[name]['name'],
                                                 frequency=mutant_count/self.population_size,
@@ -244,7 +244,7 @@ class IndiGrow:
                             self.graph_node_to_genotype[mutant_genotype]['frequency'] += 1 / self.population_size
                         # if it is new, add it to the map and the population
                         else:
-                            current_counter = next(self.counter)
+                            current_counter = str(next(self.counter))
                             self.population.add_vertex(name=current_counter,
                                                     parent=self.population.vs[name]['name'],
                                                     frequency=1/self.population_size,
@@ -331,7 +331,7 @@ class IndiGrow:
         a frequency of .15 and the new organism (state=1) will have a frequency of .25
         """
         genotype_copy = self.genotype_deepcopy(genotype)
-        
+
         # change each member variable in the state
         for change in state_changes:
             genotype_copy.__dict__[change] = state_changes[change]
@@ -341,7 +341,7 @@ class IndiGrow:
 
         # if the copy is not already in the map we need to add it
         if genotype_copy not in self.graph_node_to_genotype:
-            current_counter = next(self.counter)
+            current_counter = str(next(self.counter))
             self.population.add_vertex(name=current_counter,
                                        parent=genotype_node['parent'],
                                        frequency=0,
@@ -350,13 +350,13 @@ class IndiGrow:
                                        num_mutations=0,
                                        dirty_flag=1)
             self.graph_node_to_genotype[genotype_copy] = self.population.vs.find(name=current_counter)
-
         # find the change to the frequency, will depend on current frequency and change in proportion
         frequency_change = self.graph_node_to_genotype[genotype]['frequency'] * proportion_change
         # update the original and transfer genotypes' frequencies
         self.graph_node_to_genotype[genotype]['frequency'] -= frequency_change
         self.graph_node_to_genotype[genotype_copy]['frequency'] += frequency_change
-    
+       
+
     def mark_as_dirty(self, genotype=None, all_dirty=False):
         if all_dirty:
             for node in self.population.vs:
